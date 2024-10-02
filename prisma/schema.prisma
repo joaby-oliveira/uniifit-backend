@@ -7,16 +7,29 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model CheckIn {
+  id        Int      @id @default(autoincrement())
+  id_user   Int
+  user      User     @relation(fields: [id_user], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id_user])
+}
+
 model User {
-  id             Int     @id @default(autoincrement())
-  email          String  @unique
-  password       String
-  accessLevel    String
-  name           String
-  status         String
-  ra             String  @unique
-  profilePicture String?
+  id              Int     @id @default(autoincrement())
+  email           String  @unique
+  password        String
+  accessLevel     String
+  name            String
+  status          String
+  ra              String  @unique
+  cellphoneNumber String
+  profilePicture  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  checkIns CheckIn[]
 }

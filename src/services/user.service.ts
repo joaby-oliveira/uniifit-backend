@@ -95,4 +95,22 @@ export class UserService {
       data: await this.prismaService.user.findMany(),
     };
   }
+
+  public async getUsersByCheckInStatus() {
+    return await this.prismaService.user.findMany({
+      where: {
+        OR: [
+          { status: 'waiting' },
+          { status: 'inactive' },
+          { status: 'active' },
+        ],
+      },
+      include: {
+        checkIns: {
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+  }
 }

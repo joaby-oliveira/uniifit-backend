@@ -8,6 +8,8 @@ import { AwsSdkModule } from 'nest-aws-sdk';
 import { SharedIniFileCredentials, S3 } from 'aws-sdk';
 import { S3ManagerModule } from './modules/s3-manager.module';
 import { PrismaService } from './services/prisma.service';
+import { CheckInController } from './controllers/check-in.controller';
+import { CheckInService } from './services/check-in.service';
 
 @Module({
   imports: [
@@ -24,10 +26,11 @@ import { PrismaService } from './services/prisma.service';
       services: [S3],
     }),
   ],
-  controllers: [UserController],
+  controllers: [UserController, CheckInController],
   providers: [
     PrismaService,
     UserService,
+    CheckInService,
     JwtService,
     {
       provide: APP_GUARD,

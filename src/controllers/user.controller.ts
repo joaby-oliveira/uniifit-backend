@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
-import { IsAdm } from 'src/constants/isAdm';
 import { Public } from 'src/constants/isPublic';
 import { AuthDTO } from 'src/dto/auth.dto';
 import { CreateUserDto } from 'src/dto/createUser.dto';
@@ -33,7 +32,9 @@ export class UserController {
       };
     } catch (error) {
       if (error.code === 'P2002') {
-        throw new BadRequestException('Não foi possível criar conta');
+        throw new BadRequestException(
+          'Não foi possível criar conta. (Dados duplicados)',
+        );
       }
       throw new InternalServerErrorException(
         'Algum erro inesperado aconteceu, tente novamente mais tarde',
@@ -82,7 +83,6 @@ export class UserController {
   }
 
   @Get()
-  @IsAdm()
   async listUsers() {
     try {
       return await this.userService.listUsers();
