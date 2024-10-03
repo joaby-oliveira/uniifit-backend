@@ -4,7 +4,9 @@ import {
   Controller,
   Get,
   InternalServerErrorException,
+  Param,
   Post,
+  Put,
   Req,
   UploadedFile,
   UseInterceptors,
@@ -14,6 +16,7 @@ import { Request } from 'express';
 import { Public } from 'src/constants/isPublic';
 import { AuthDTO } from 'src/dto/auth.dto';
 import { CreateUserDto } from 'src/dto/createUser.dto';
+import { UpdateUserDto } from 'src/dto/updateUser.dto';
 import { UserService } from 'src/services/user.service';
 
 @Controller('user')
@@ -88,6 +91,28 @@ export class UserController {
       return await this.userService.listUsers();
     } catch (error) {
       console.log(error);
+      throw new InternalServerErrorException(
+        'Algum erro inesperado aconteceu, tente novamente mais tarde',
+      );
+    }
+  }
+
+  @Put(':id')
+  async updateUser(@Param('id') id: number, @Body() user: UpdateUserDto) {
+    try {
+      const updatedUser = await this.userService.updateUser(+id, user);
+
+      return {
+        message: 'Conta criada com sucesso',
+        data: updatedUser,
+      };
+    } catch (error) {
+      if (error.code === 'P2002') {
+        throw new BadRequestException(
+          'Não foi possível criar conta. (Dados duplicados)',
+        );
+      }
+
       throw new InternalServerErrorException(
         'Algum erro inesperado aconteceu, tente novamente mais tarde',
       );

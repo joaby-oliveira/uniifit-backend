@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { readFileSync, rmSync, writeFileSync } from 'fs';
 import { S3ManagerService } from './s3-manager.service';
 import { UserInterface } from 'src/interfaces/user.interface';
+import { UpdateUserDto } from 'src/dto/updateUser.dto';
 
 @Injectable()
 export class UserService {
@@ -110,6 +111,20 @@ export class UserService {
           take: 1,
           orderBy: { createdAt: 'desc' },
         },
+      },
+    });
+  }
+
+  public async updateUser(id: number, user: UpdateUserDto) {
+    return this.prismaService.user.update({
+      data: {
+        email: user.email,
+        name: user.name,
+        ra: user.ra,
+        cellphoneNumber: user.cellphoneNumber,
+      },
+      where: {
+        id: id,
       },
     });
   }
