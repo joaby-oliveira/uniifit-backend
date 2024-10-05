@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   InternalServerErrorException,
   Param,
@@ -103,15 +104,32 @@ export class UserController {
       const updatedUser = await this.userService.updateUser(+id, user);
 
       return {
-        message: 'Conta criada com sucesso',
+        message: 'Conta atualizada com sucesso',
         data: updatedUser,
       };
     } catch (error) {
       if (error.code === 'P2002') {
         throw new BadRequestException(
-          'Não foi possível criar conta. (Dados duplicados)',
+          'Não foi possível atualizar conta. (Dados duplicados)',
         );
       }
+
+      throw new InternalServerErrorException(
+        'Algum erro inesperado aconteceu, tente novamente mais tarde',
+      );
+    }
+  }
+
+  @Delete(':id')
+  async deleteUser(@Param('id') id: number) {
+    try {
+      await this.userService.deleteUser(+id);
+
+      return {
+        message: 'Conta deletada com sucesso',
+      };
+    } catch (error) {
+      console.log(error);
 
       throw new InternalServerErrorException(
         'Algum erro inesperado aconteceu, tente novamente mais tarde',

@@ -128,4 +128,12 @@ export class UserService {
       },
     });
   }
+
+  public async deleteUser(id: number) {
+    return this.prismaService.user.delete({
+      where: {
+        id: id,
+      },
+    });
+  }
 }
