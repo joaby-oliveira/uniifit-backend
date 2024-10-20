@@ -33,4 +33,22 @@ export class CheckInService {
       },
     });
   }
+
+  public async getAllMonthCheckIns() {
+    const now = new Date();
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const records = await this.prismaService.checkIn.findMany({
+      where: {
+        createdAt: {
+          gte: startOfMonth,
+          lt: startOfNextMonth,
+        },
+      },
+    });
+
+    return records;
+  }
 }

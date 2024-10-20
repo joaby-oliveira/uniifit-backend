@@ -55,4 +55,21 @@ export class CheckInController {
       );
     }
   }
+
+  @Get()
+  async getAllMonthCheckIns() {
+    try {
+      const checkInList = await this.checkInService.getAllMonthCheckIns();
+
+      return {
+        message: 'Check-in listados com sucesso',
+        data: checkInList,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Erro ao obter os check-in anteriores.',
+      );
+    }
+  }
 }
