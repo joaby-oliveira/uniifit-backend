@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -95,6 +95,20 @@ export class UserService {
       message: 'Usuários listados com sucesso',
       data: await this.prismaService.user.findMany(),
     };
+  }
+
+  public async listUserById(id: number) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado!');
+    }
+
+    return user;
   }
 
   public async getUsersByCheckInStatus() {

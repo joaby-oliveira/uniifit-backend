@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   InternalServerErrorException,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -92,6 +93,21 @@ export class UserController {
       return await this.userService.listUsers();
     } catch (error) {
       console.log(error);
+      throw new InternalServerErrorException(
+        'Algum erro inesperado aconteceu, tente novamente mais tarde',
+      );
+    }
+  }
+
+  @Get(':id')
+  async listUserById(@Param('id') id: number) {
+    try {
+      return await this.userService.listUserById(+id);
+    } catch (error) {
+      if (error.status === 404) {
+        throw new NotFoundException(error.message);
+      }
+
       throw new InternalServerErrorException(
         'Algum erro inesperado aconteceu, tente novamente mais tarde',
       );
