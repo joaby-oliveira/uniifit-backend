@@ -54,6 +54,7 @@ export class UserService {
           sub: user.id,
           email: user.email,
           accessLevel: user.accessLevel,
+          role: user.role,
         },
         {
           secret: process.env['JWT_SECRET'],

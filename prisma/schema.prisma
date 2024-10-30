@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgres"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -17,6 +17,11 @@ model CheckIn {
   @@index([id_user])
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id              Int     @id @default(autoincrement())
   email           String  @unique
@@ -27,10 +32,10 @@ model User {
   ra              String  @unique
   cellphoneNumber String
   profilePicture  String?
+  role            Role    @default(USER)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   checkIns CheckIn[]
 }
-
