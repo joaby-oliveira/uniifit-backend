@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   InternalServerErrorException,
+  Param,
   Post,
   Req,
 } from '@nestjs/common';
@@ -64,6 +65,23 @@ export class CheckInController {
       return {
         message: 'Check-in listados com sucesso',
         data: checkInList,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Erro ao obter os check-in anteriores.',
+      );
+    }
+  }
+
+  @Get('streak/:id')
+  async getStreakCheckIn(@Param('id') userId: number) {
+    try {
+      const streak = await this.checkInService.getStreak(+userId);
+
+      return {
+        message: 'Streak de Check-in listados com sucesso',
+        data: streak,
       };
     } catch (error) {
       console.log(error);

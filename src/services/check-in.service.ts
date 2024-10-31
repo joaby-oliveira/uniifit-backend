@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { endOfDay, startOfDay } from 'date-fns';
+import { endOfDay, startOfDay, subDays } from 'date-fns';
 
 @Injectable()
 export class CheckInService {
@@ -50,5 +50,34 @@ export class CheckInService {
     });
 
     return records;
+  }
+
+  public async getStreak(userId: number) {
+    let streak = 0;
+    let daysMinus = 0;
+    while (true) {
+      const todayStart = startOfDay(subDays(new Date(), daysMinus));
+      const todayEnd = endOfDay(subDays(new Date(), daysMinus));
+
+      const existingCheckIn = await this.prismaService.checkIn.findFirst({
+        where: {
+          id_user: userId,
+          createdAt: {
+            gte: todayStart, // Maior ou igual ao início do dia
+            lte: todayEnd, // Menor ou igual ao final do dia
+          },
+        },
+      });
+
+      daysMinus++;
+
+      if (daysMinus == 1 && !existingCheckIn) continue;
+
+      if (!existingCheckIn) break;
+
+      streak++;
+    }
+
+    return streak;
   }
 }
