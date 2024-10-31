@@ -126,6 +126,7 @@ export class CheckInService {
     const users = await this.prismaService.user.findMany({
       where: {
         status: 'approved',
+        role: 'USER',
       },
     });
 
@@ -136,7 +137,6 @@ export class CheckInService {
         this.prismaService.user.update({
           data: {
             status: 'inactive',
-            role: 'USER',
           },
           where: {
             id: user.id,
