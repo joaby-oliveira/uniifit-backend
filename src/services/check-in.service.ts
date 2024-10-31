@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { endOfDay, startOfDay, subDays } from 'date-fns';
+import { endOfDay, startOfDay, subDays, differenceInDays } from 'date-fns';
 
 @Injectable()
 export class CheckInService {
@@ -79,5 +79,27 @@ export class CheckInService {
     }
 
     return streak;
+  }
+
+  public async getIdleStreak(userId: number) {
+    const lastCheckIn = await this.prismaService.checkIn.findFirst({
+      where: {
+        id_user: userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (!lastCheckIn) {
+      return null;
+    }
+
+    // Calcula a quantidade de dias sem check-in desde o último
+    const lastCheckInDate = startOfDay(lastCheckIn.createdAt);
+    const today = startOfDay(new Date());
+    const missedDays = differenceInDays(today, lastCheckInDate) - 1; // Subtrai 1 para não contar o dia do último check-in
+
+    return missedDays > 0 ? missedDays : 0;
   }
 }

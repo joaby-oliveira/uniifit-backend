@@ -90,4 +90,21 @@ export class CheckInController {
       );
     }
   }
+
+  @Get('idle/:id')
+  async getIdleStreakCheckIn(@Param('id') userId: number) {
+    try {
+      const streak = await this.checkInService.getIdleStreak(+userId);
+
+      return {
+        message: 'Streak de ociosidade listada com sucesso',
+        data: streak,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Erro ao obter os check-in anteriores.',
+      );
+    }
+  }
 }
