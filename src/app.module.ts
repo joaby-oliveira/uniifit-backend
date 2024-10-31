@@ -10,9 +10,11 @@ import { S3ManagerModule } from './modules/s3-manager.module';
 import { PrismaService } from './services/prisma.service';
 import { CheckInController } from './controllers/check-in.controller';
 import { CheckInService } from './services/check-in.service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     S3ManagerModule,
     AwsSdkModule.forRoot({
       defaultServiceOptions: {

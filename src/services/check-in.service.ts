@@ -1,6 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { endOfDay, startOfDay, subDays, differenceInDays } from 'date-fns';
+import {
+  endOfDay,
+  startOfDay,
+  subDays,
+  differenceInDays,
+  addDays,
+  isSaturday,
+  isSunday,
+} from 'date-fns';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class CheckInService {
@@ -95,11 +104,45 @@ export class CheckInService {
       return null;
     }
 
-    // Calcula a quantidade de dias sem check-in desde o último
     const lastCheckInDate = startOfDay(lastCheckIn.createdAt);
     const today = startOfDay(new Date());
-    const missedDays = differenceInDays(today, lastCheckInDate) - 1; // Subtrai 1 para não contar o dia do último check-in
 
-    return missedDays > 0 ? missedDays : 0;
+    let missedDays = 0;
+    let currentDate = addDays(lastCheckInDate, 1); // Começa no dia após o último check-in
+
+    while (differenceInDays(today, currentDate) > 0) {
+      // Ignora sábados e domingos
+      if (!isSaturday(currentDate) && !isSunday(currentDate)) {
+        missedDays++;
+      }
+      currentDate = addDays(currentDate, 1); // Incrementa um dia
+    }
+
+    return missedDays;
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async handleCron() {
+    const users = await this.prismaService.user.findMany({
+      where: {
+        status: 'approved',
+      },
+    });
+
+    for (const user of users) {
+      const idleStreak = await this.getIdleStreak(user.id);
+
+      if (idleStreak > 7) {
+        this.prismaService.user.update({
+          data: {
+            status: 'inactive',
+            role: 'USER',
+          },
+          where: {
+            id: user.id,
+          },
+        });
+      }
+    }
   }
 }
