@@ -23,6 +23,7 @@ services:
       - '3001:3001'
     depends_on:
       - db
+      - cache
     volumes:
       - ./src:/app/src
 
@@ -37,3 +38,19 @@ services:
       - '5050:80'
     depends_on:
       - db
+
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning
+    volumes: 
+      - cache:/data
+    user: root
+
+volumes:
+  db:
+    driver: local
+  cache:
+    driver: local

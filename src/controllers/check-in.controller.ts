@@ -55,4 +55,9 @@ export class CheckInController {
       );
     }
   }
+
+  @Post('qrcode')
+  async getQrCode() {
+    return await this.checkInService.teste();
+  }
 }

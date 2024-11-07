@@ -1,10 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { endOfDay, startOfDay } from 'date-fns';
+import { RedisService } from '@liaoliaots/nestjs-redis';
+import Redis from 'ioredis';
 
 @Injectable()
 export class CheckInService {
-  constructor(private prismaService: PrismaService) {}
+  private readonly redis: Redis | null;
+
+  constructor(
+    private prismaService: PrismaService,
+    private readonly redisService: RedisService,
+  ) {
+    this.redis = this.redisService.getOrThrow();
+  }
 
   public async createCheckIn(userId: number) {
     const todayStart = startOfDay(new Date());
@@ -32,5 +41,9 @@ export class CheckInService {
         id_user: userId,
       },
     });
+  }
+
+  public async teste() {
+    return await this.redis.set('key', 'value', 'EX', 10);
   }
 }

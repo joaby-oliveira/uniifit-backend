@@ -10,6 +10,8 @@ import { S3ManagerModule } from './modules/s3-manager.module';
 import { PrismaService } from './services/prisma.service';
 import { CheckInController } from './controllers/check-in.controller';
 import { CheckInService } from './services/check-in.service';
+import { ConfigModule } from '@nestjs/config';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 
 @Module({
   imports: [
@@ -24,6 +26,13 @@ import { CheckInService } from './services/check-in.service';
         s3ForcePathStyle: true,
       },
       services: [S3],
+    }),
+    ConfigModule.forRoot(),
+    RedisModule.forRoot({
+      config: {
+        host: process.env.REDIS_HOST,
+        port: +process.env.REDIS_PORT,
+      },
     }),
   ],
   controllers: [UserController, CheckInController],
