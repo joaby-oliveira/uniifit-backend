@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   InternalServerErrorException,
+  Param,
   Post,
   Query,
   Req,
@@ -57,6 +58,7 @@ export class CheckInController {
     }
   }
 
+<<<<<<< HEAD
   @Post('qrcode')
   async getQrCode() {
     return await this.checkInService.getQrCode();
@@ -68,5 +70,56 @@ export class CheckInController {
     @Query('checkInId') checkInId: string,
   ) {
     return await this.checkInService.confirmCheckin(encodedQrCode, +checkInId);
+=======
+  @Get()
+  async getAllMonthCheckIns() {
+    try {
+      const checkInList = await this.checkInService.getAllMonthCheckIns();
+
+      return {
+        message: 'Check-in listados com sucesso',
+        data: checkInList,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Erro ao obter os check-in anteriores.',
+      );
+    }
+  }
+
+  @Get('streak/:id')
+  async getStreakCheckIn(@Param('id') userId: number) {
+    try {
+      const streak = await this.checkInService.getStreak(+userId);
+
+      return {
+        message: 'Streak de Check-in listados com sucesso',
+        data: streak,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Erro ao obter os check-in anteriores.',
+      );
+    }
+  }
+
+  @Get('idle/:id')
+  async getIdleStreakCheckIn(@Param('id') userId: number) {
+    try {
+      const streak = await this.checkInService.getIdleStreak(+userId);
+
+      return {
+        message: 'Streak de ociosidade listada com sucesso',
+        data: streak,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Erro ao obter os check-in anteriores.',
+      );
+    }
+>>>>>>> 31d78281c5066352d0bea0daeb734bea0a9a3747
   }
 }

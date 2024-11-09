@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { readFileSync, rmSync, writeFileSync } from 'fs';
 import { S3ManagerService } from './s3-manager.service';
 import { UserInterface } from 'src/interfaces/user.interface';
+import { UpdateUserDto } from 'src/dto/updateUser.dto';
 
 @Injectable()
 export class UserService {
@@ -53,6 +54,7 @@ export class UserService {
           sub: user.id,
           email: user.email,
           accessLevel: user.accessLevel,
+          role: user.role,
         },
         {
           secret: process.env['JWT_SECRET'],
@@ -96,6 +98,20 @@ export class UserService {
     };
   }
 
+  public async listUserById(id: number) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado!');
+    }
+
+    return user;
+  }
+
   public async getUsersByCheckInStatus() {
     return await this.prismaService.user.findMany({
       where: {
@@ -110,6 +126,28 @@ export class UserService {
           take: 1,
           orderBy: { createdAt: 'desc' },
         },
+      },
+    });
+  }
+
+  public async updateUser(id: number, user: UpdateUserDto) {
+    return this.prismaService.user.update({
+      data: {
+        email: user.email,
+        name: user.name,
+        ra: user.ra,
+        cellphoneNumber: user.cellphoneNumber,
+      },
+      where: {
+        id: id,
+      },
+    });
+  }
+
+  public async deleteUser(id: number) {
+    return this.prismaService.user.delete({
+      where: {
+        id: id,
       },
     });
   }

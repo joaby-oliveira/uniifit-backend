@@ -1,8 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { endOfDay, startOfDay } from 'date-fns';
 import { RedisService } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
+import {
+  endOfDay,
+  startOfDay,
+  subDays,
+  differenceInDays,
+  addDays,
+  isSaturday,
+  isSunday,
+} from 'date-fns';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class CheckInService {
@@ -43,34 +52,106 @@ export class CheckInService {
     });
   }
 
-  public async getQrCode() {
-    let token = await this.redis.get('lastGeneratedQrCode');
+  public async getAllMonthCheckIns() {
+    const now = new Date();
 
-    if (!token) {
-      await this.redis.set('lastGeneratedQrCode', Date.now(), 'EX', 10);
-      token = await this.redis.get('lastGeneratedQrCode');
-    }
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-    token = btoa(token);
+    const records = await this.prismaService.checkIn.findMany({
+      where: {
+        createdAt: {
+          gte: startOfMonth,
+          lt: startOfNextMonth,
+        },
+      },
+    });
 
-    return { token };
+    return records;
   }
 
-  public async confirmCheckin(encodedQrCode: string, checkInId: number) {
-    const lastEmittedQrCode = await this.redis.get('lastGeneratedQrCode');
-    const decodedQrCode = atob(encodedQrCode);
+  public async getStreak(userId: number) {
+    let streak = 0;
+    let daysMinus = 0;
+    while (true) {
+      const todayStart = startOfDay(subDays(new Date(), daysMinus));
+      const todayEnd = endOfDay(subDays(new Date(), daysMinus));
 
-    if (!lastEmittedQrCode) {
-      return false;
+      const existingCheckIn = await this.prismaService.checkIn.findFirst({
+        where: {
+          id_user: userId,
+          createdAt: {
+            gte: todayStart, // Maior ou igual ao início do dia
+            lte: todayEnd, // Menor ou igual ao final do dia
+          },
+        },
+      });
+
+      daysMinus++;
+
+      if (daysMinus == 1 && !existingCheckIn) continue;
+
+      if (!existingCheckIn) break;
+
+      streak++;
     }
 
-    if (lastEmittedQrCode !== decodedQrCode) {
-      return false;
-    }
+    return streak;
+  }
 
-    this.prismaService.checkIn.update({
-      where: { id: checkInId },
-      data: { confirmed: true },
+  public async getIdleStreak(userId: number) {
+    const lastCheckIn = await this.prismaService.checkIn.findFirst({
+      where: {
+        id_user: userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
+
+    if (!lastCheckIn) {
+      return null;
+    }
+
+    const lastCheckInDate = startOfDay(lastCheckIn.createdAt);
+    const today = startOfDay(new Date());
+
+    let missedDays = 0;
+    let currentDate = addDays(lastCheckInDate, 1); // Começa no dia após o último check-in
+
+    while (differenceInDays(today, currentDate) > 0) {
+      // Ignora sábados e domingos
+      if (!isSaturday(currentDate) && !isSunday(currentDate)) {
+        missedDays++;
+      }
+      currentDate = addDays(currentDate, 1); // Incrementa um dia
+    }
+
+    return missedDays;
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async handleCron() {
+    const users = await this.prismaService.user.findMany({
+      where: {
+        status: 'approved',
+        role: 'USER',
+      },
+    });
+
+    for (const user of users) {
+      const idleStreak = await this.getIdleStreak(user.id);
+
+      if (idleStreak > 7) {
+        this.prismaService.user.update({
+          data: {
+            status: 'inactive',
+          },
+          where: {
+            id: user.id,
+          },
+        });
+      }
+    }
   }
 }
