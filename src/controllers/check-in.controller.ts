@@ -3,6 +3,7 @@ import {
   Get,
   InternalServerErrorException,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { Request } from 'express';
@@ -58,6 +59,14 @@ export class CheckInController {
 
   @Post('qrcode')
   async getQrCode() {
-    return await this.checkInService.teste();
+    return await this.checkInService.getQrCode();
+  }
+
+  @Post('confirm')
+  async confirm(
+    @Query('encodedQrCode') encodedQrCode: string,
+    @Query('checkInId') checkInId: string,
+  ) {
+    return await this.checkInService.confirmCheckin(encodedQrCode, +checkInId);
   }
 }

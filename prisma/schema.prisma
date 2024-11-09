@@ -10,6 +10,7 @@ generator client {
 model CheckIn {
   id        Int      @id @default(autoincrement())
   id_user   Int
+  confirmed Boolean? @default(false)
   user      User     @relation(fields: [id_user], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -33,4 +34,3 @@ model User {
 
   checkIns CheckIn[]
 }
-
