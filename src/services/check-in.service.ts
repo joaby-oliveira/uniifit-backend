@@ -154,4 +154,35 @@ export class CheckInService {
       }
     }
   }
+
+  public async getQrCode() {
+    let token = await this.redis.get('lastGeneratedQrCode');
+
+    if (!token) {
+      await this.redis.set('lastGeneratedQrCode', Date.now(), 'EX', 10);
+      token = await this.redis.get('lastGeneratedQrCode');
+    }
+
+    token = btoa(token);
+
+    return { token };
+  }
+
+  public async confirmCheckin(encodedQrCode: string, checkInId: number) {
+    const lastEmittedQrCode = await this.redis.get('lastGeneratedQrCode');
+    const decodedQrCode = atob(encodedQrCode);
+
+    if (!lastEmittedQrCode) {
+      return false;
+    }
+
+    if (lastEmittedQrCode !== decodedQrCode) {
+      return false;
+    }
+
+    this.prismaService.checkIn.update({
+      where: { id: checkInId },
+      data: { confirmed: true },
+    });
+  }
 }

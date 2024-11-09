@@ -58,7 +58,6 @@ export class CheckInController {
     }
   }
 
-<<<<<<< HEAD
   @Post('qrcode')
   async getQrCode() {
     return await this.checkInService.getQrCode();
@@ -70,7 +69,8 @@ export class CheckInController {
     @Query('checkInId') checkInId: string,
   ) {
     return await this.checkInService.confirmCheckin(encodedQrCode, +checkInId);
-=======
+  }
+
   @Get()
   async getAllMonthCheckIns() {
     try {
@@ -120,6 +120,5 @@ export class CheckInController {
         'Erro ao obter os check-in anteriores.',
       );
     }
->>>>>>> 31d78281c5066352d0bea0daeb734bea0a9a3747
   }
 }
