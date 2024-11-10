@@ -10,12 +10,9 @@ import { S3ManagerModule } from './modules/s3-manager.module';
 import { PrismaService } from './services/prisma.service';
 import { CheckInController } from './controllers/check-in.controller';
 import { CheckInService } from './services/check-in.service';
-<<<<<<< HEAD
 import { ConfigModule } from '@nestjs/config';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
-=======
 import { ScheduleModule } from '@nestjs/schedule';
->>>>>>> 31d78281c5066352d0bea0daeb734bea0a9a3747
 
 @Module({
   imports: [
