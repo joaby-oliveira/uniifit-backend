@@ -159,7 +159,8 @@ export class CheckInService {
     let token = await this.redis.get('lastGeneratedQrCode');
 
     if (!token) {
-      await this.redis.set('lastGeneratedQrCode', Date.now(), 'EX', 10);
+      const tenMinutes = 10 * 60;
+      await this.redis.set('lastGeneratedQrCode', Date.now(), 'EX', tenMinutes);
       token = await this.redis.get('lastGeneratedQrCode');
     }
 
@@ -180,9 +181,11 @@ export class CheckInService {
       return false;
     }
 
-    this.prismaService.checkIn.update({
+    await this.prismaService.checkIn.update({
       where: { id: checkInId },
       data: { confirmed: true },
     });
+
+    return true;
   }
 }
