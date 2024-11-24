@@ -25,13 +25,12 @@ enum Role {
 
 model User {
   id              Int     @id @default(autoincrement())
+  name            String
   email           String  @unique
   password        String
-  accessLevel     String
-  name            String
-  status          String
-  ra              String  @unique
-  cellphoneNumber String
+  status          String  @default("waiting")
+  ra              String? @unique
+  cellphoneNumber String?
   profilePicture  String?
   role            Role    @default(USER)
 

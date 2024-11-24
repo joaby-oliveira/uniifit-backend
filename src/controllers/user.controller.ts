@@ -17,6 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { Public } from 'src/constants/isPublic';
 import { AuthDTO } from 'src/dto/auth.dto';
+import { CreateAdmDto } from 'src/dto/createAdm.dto';
 import { CreateUserDto } from 'src/dto/createUser.dto';
 import { UpdateUserDto } from 'src/dto/updateUser.dto';
 import { UserService } from 'src/services/user.service';
@@ -36,6 +37,29 @@ export class UserController {
         data: createdUser,
       };
     } catch (error) {
+      if (error.code === 'P2002') {
+        throw new BadRequestException(
+          'Não foi possível criar conta. (Dados duplicados)',
+        );
+      }
+      throw new InternalServerErrorException(
+        'Algum erro inesperado aconteceu, tente novamente mais tarde',
+      );
+    }
+  }
+
+  @Post('/adm')
+  async createAdm(@Body() user: CreateAdmDto) {
+    try {
+      const createdUser = await this.userService.createAdm(user);
+
+      return {
+        message: 'Conta criada com sucesso',
+        data: createdUser,
+      };
+    } catch (error) {
+      console.log(error);
+
       if (error.code === 'P2002') {
         throw new BadRequestException(
           'Não foi possível criar conta. (Dados duplicados)',
@@ -91,6 +115,18 @@ export class UserController {
   async listUsers(@Param('status') status: string) {
     try {
       return await this.userService.listUsers(status);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Algum erro inesperado aconteceu, tente novamente mais tarde',
+      );
+    }
+  }
+
+  @Get('/adms/get-all')
+  async listAdms() {
+    try {
+      return await this.userService.listAdms();
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(

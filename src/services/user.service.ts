@@ -6,6 +6,7 @@ import { readFileSync, rmSync, writeFileSync } from 'fs';
 import { S3ManagerService } from './s3-manager.service';
 import { UserInterface } from 'src/interfaces/user.interface';
 import { UpdateUserDto } from 'src/dto/updateUser.dto';
+import { CreateAdmDto } from 'src/dto/createAdm.dto';
 
 @Injectable()
 export class UserService {
@@ -22,8 +23,22 @@ export class UserService {
     return await this.prismaService.user.create({
       data: {
         ...user,
-        accessLevel: 'member',
+        role: 'USER',
         status: 'waiting',
+        password: hashedPassword,
+      },
+    });
+  }
+
+  public async createAdm(user: CreateAdmDto) {
+    const saltOrRounds = 10;
+    const hashedPassword = await bcrypt.hash(user.password, saltOrRounds);
+
+    return await this.prismaService.user.create({
+      data: {
+        ...user,
+        role: 'ADMIN',
+        status: 'active',
         password: hashedPassword,
       },
     });
@@ -53,7 +68,6 @@ export class UserService {
         {
           sub: user.id,
           email: user.email,
-          accessLevel: user.accessLevel,
           role: user.role,
         },
         {
@@ -104,13 +118,17 @@ export class UserService {
   }
 
   public async listAdms() {
+    const adms = await this.prismaService.user.findMany({
+      where: {
+        role: 'ADMIN',
+      },
+    });
+
+    console.log(adms);
+
     return {
-      message: 'Usuários listados com sucesso',
-      data: await this.prismaService.user.findMany({
-        where: {
-          role: 'ADMIN',
-        },
-      }),
+      message: 'Administradores listados com sucesso',
+      data: adms,
     };
   }
 
