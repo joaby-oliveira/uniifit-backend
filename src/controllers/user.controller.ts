@@ -87,10 +87,10 @@ export class UserController {
     }
   }
 
-  @Get()
-  async listUsers() {
+  @Get(':status')
+  async listUsers(@Param('status') status: string) {
     try {
-      return await this.userService.listUsers();
+      return await this.userService.listUsers(status);
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(

@@ -91,10 +91,26 @@ export class UserService {
     };
   }
 
-  public async listUsers() {
+  public async listUsers(status: string) {
     return {
       message: 'Usuários listados com sucesso',
-      data: await this.prismaService.user.findMany(),
+      data: await this.prismaService.user.findMany({
+        where: {
+          role: 'USER',
+          status,
+        },
+      }),
+    };
+  }
+
+  public async listAdms() {
+    return {
+      message: 'Usuários listados com sucesso',
+      data: await this.prismaService.user.findMany({
+        where: {
+          role: 'ADMIN',
+        },
+      }),
     };
   }
 
@@ -133,10 +149,7 @@ export class UserService {
   public async updateUser(id: number, user: UpdateUserDto) {
     return this.prismaService.user.update({
       data: {
-        email: user.email,
-        name: user.name,
-        ra: user.ra,
-        cellphoneNumber: user.cellphoneNumber,
+        ...user,
       },
       where: {
         id: id,
